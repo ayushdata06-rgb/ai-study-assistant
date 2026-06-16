@@ -20,7 +20,7 @@ from rag.vectorstore import (
     get_retriever,
     vectorstore_exists,
 )
-from rag.chain import build_rag_chain, ask_question
+from rag.chain import build_conversational_chain, ask_with_memory
 
 load_dotenv()
 
@@ -218,7 +218,7 @@ with st.sidebar:
                 vs = create_vectorstore(all_chunks)
                 retriever = get_retriever(vs)
                 progress.progress(95, text="Connecting LLM...")
-                st.session_state.chain = build_rag_chain(retriever)
+                st.session_state.chain = build_conversational_chain(retriever)
                 st.session_state.total_chunks += len(all_chunks)
                 progress.progress(100, text="Done!")
                 st.success(
@@ -234,7 +234,7 @@ with st.sidebar:
             with st.spinner("Loading vector store..."):
                 vs = load_vectorstore()
                 retriever = get_retriever(vs)
-                st.session_state.chain = build_rag_chain(retriever)
+                st.session_state.chain = build_conversational_chain(retriever)
             st.success("Loaded existing index!")
 
     st.markdown("---")
@@ -337,7 +337,12 @@ else:
         with st.chat_message("assistant"):
             with st.spinner("Searching your notes and generating answer..."):
                 try:
-                    result = ask_question(st.session_state.chain, question)
+                    # Pass history BEFORE the current question for context
+                    result = ask_with_memory(
+                        st.session_state.chain,
+                        question,
+                        st.session_state.chat_history[:-1],  # exclude the just-appended user msg
+                    )
                     answer = result["answer"]
                     sources = result["sources"]
                 except Exception as e:
