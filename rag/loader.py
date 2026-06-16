@@ -5,10 +5,16 @@ Supports PDF and TXT/MD files. Splits them into overlapping chunks
 suitable for embedding and vector-store retrieval.
 """
 
+import sys
+import io
 from pathlib import Path
 
 from langchain_community.document_loaders import PyPDFLoader, TextLoader
-from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain_text_splitters import RecursiveCharacterTextSplitter
+
+# Ensure stdout is UTF-8 on Windows (avoids cp1252 UnicodeEncodeError)
+if sys.stdout.encoding and sys.stdout.encoding.lower() != "utf-8":
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
 
 
 # ─────────────────────────────────────────────

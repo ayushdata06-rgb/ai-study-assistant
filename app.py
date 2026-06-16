@@ -1,10 +1,14 @@
 # app.py
 """
-Phase 5 — Streamlit Chat UI
+Phase 5 -- Streamlit Chat UI
 Upload PDFs/TXT -> index into ChromaDB -> chat with your notes.
 """
 
 import os
+
+# Silence ChromaDB telemetry before any chromadb import
+os.environ.setdefault("ANONYMIZED_TELEMETRY", "False")
+
 import streamlit as st
 from pathlib import Path
 from dotenv import load_dotenv

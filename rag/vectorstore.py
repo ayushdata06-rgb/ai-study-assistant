@@ -1,14 +1,29 @@
 # rag/vectorstore.py
 """
-Phase 3 — Vector Store with ChromaDB
+Phase 3 -- Vector Store with ChromaDB
 Handles persisting, loading, and querying document embeddings.
 
 Collection name: "study_notes"
-Persistence dir: ./chroma_db  (gitignored — stays local)
+Persistence dir: ./chroma_db  (gitignored -- stays local)
 """
 
 import os
+import chromadb
+from chromadb.config import Settings
 from langchain_chroma import Chroma
+
+# ── Silence chromadb 0.5.3 telemetry bug ─────────────────────────────────────
+# chromadb 0.5.3 has a broken PostHog capture() call (wrong arity).
+# Monkey-patch it to a no-op so it stops printing noise to the terminal.
+try:
+    import chromadb.telemetry.product.posthog as _ph
+    _ph.Posthog.capture = lambda *a, **kw: None  # type: ignore[method-assign]
+except Exception:
+    pass  # if chromadb version changes, fail silently
+# ─────────────────────────────────────────────────────────────────────────────
+
+# Shared chromadb settings -- disables telemetry at the Settings level too
+_CHROMA_SETTINGS = Settings(anonymized_telemetry=False)
 from rag.embedder import get_embeddings
 
 CHROMA_DIR = "./chroma_db"
@@ -39,6 +54,7 @@ def create_vectorstore(chunks: list) -> Chroma:
         embedding=embeddings,
         persist_directory=CHROMA_DIR,
         collection_name=COLLECTION_NAME,
+        client_settings=_CHROMA_SETTINGS,
     )
 
     print(
@@ -76,6 +92,7 @@ def load_vectorstore() -> Chroma:
         persist_directory=CHROMA_DIR,
         embedding_function=embeddings,
         collection_name=COLLECTION_NAME,
+        client_settings=_CHROMA_SETTINGS,
     )
 
     print(f"[VectorStore] Loaded existing ChromaDB from '{CHROMA_DIR}'")
