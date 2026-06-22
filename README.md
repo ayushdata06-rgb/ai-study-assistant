@@ -160,6 +160,4 @@ PRs and issues are welcome! Please open an issue first to discuss larger changes
 
 ---
 
-## 📄 License
 
-MIT — see [LICENSE](LICENSE)
